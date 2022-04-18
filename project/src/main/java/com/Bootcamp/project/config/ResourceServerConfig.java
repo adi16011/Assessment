@@ -22,12 +22,14 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .mvcMatchers("/hello","/registerCustomer","/admin/**")
+                .mvcMatchers("/hello","/admin/**")
                 .hasRole("ADMIN")
                 .mvcMatchers("/address_add","/addressAdd","/customer/**")
                 .hasAnyRole("CUSTOMER","ADMIN")
-                .mvcMatchers("/seller/**","/registerSeller")
+                .mvcMatchers("/seller/**")
                 .hasAnyRole("SELLER","ADMIN")
+                .antMatchers("/confirm","/registerCustomer","/registerSeller")
+                .permitAll()
 
                 .anyRequest()
                 .permitAll()

@@ -159,7 +159,7 @@ public class PublicAccessController {
 
         ConfirmToken confirmToken = new ConfirmToken(userf);
         confirmTokenRepo.save(confirmToken);
-        asyncEmailService.sendASynchronousMail(user.getEmail(),"Complete Activation of your Account","To activate your account please use this link : " + "http://localhost:8080/customer/confirm?token="+confirmToken.getConfirmationToken());
+        asyncEmailService.sendASynchronousMail(user.getEmail(),"Complete Activation of your Account","To activate your account please use this link : " + "http://localhost:8080/confirm?token="+confirmToken.getConfirmationToken());
 
 
 

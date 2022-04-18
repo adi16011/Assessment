@@ -26,6 +26,7 @@ import javax.validation.Valid;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -312,7 +313,16 @@ public class CustomerController {
 
         if(address == null){
 
-//            return new ExceptionResponse(new Date(),"Error","Address not Found");
+
+            return new ResponseEntity<String>("The address doesn't exist with id : " + aid,HttpStatus.BAD_REQUEST);
+
+
+
+        }
+
+        if(!Objects.equals(address.getUserId().getId(), user.getId())){
+            return new ResponseEntity<String>("You can't update this address",HttpStatus.BAD_REQUEST);
+
 
 
         }
@@ -377,21 +387,28 @@ public class CustomerController {
 
     }
 
-    @DeleteMapping(value = "/deleteAddress")
-    public ResponseEntity<String> deleteAddress(){
+    @DeleteMapping(value = "/deleteAddress/{id}")
+    public ResponseEntity<String> deleteAddress(@PathVariable Long id){
 
         Authentication authentication = authenticationFacade.getAuthentication();
 
 
         UserEntity user = (UserEntity) authentication.getPrincipal();
 
-        Address address = addressRepo.findByUserId(user.getId());
+        Address address = addressRepo.findById(id).orElse(null);
 
         if(address == null){
 
             return new ResponseEntity<String>("Address Not Found",HttpStatus.BAD_REQUEST);
 
 //            return new ExceptionResponse(new Date(),"Failed","Address not Found");
+
+        }
+
+        if(!Objects.equals(address.getUserId().getId(), user.getId())){
+            return new ResponseEntity<String>("You can't delete this address",HttpStatus.BAD_REQUEST);
+
+
 
         }
 

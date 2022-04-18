@@ -26,6 +26,9 @@ public class UserEntity extends Auditable<String> implements UserDetails{
 
     @NotEmpty
     private String firstName;
+
+    private String middleName;
+
     @NotEmpty
     private String lastName;
     @Column(unique = true)
@@ -52,6 +55,13 @@ public class UserEntity extends Auditable<String> implements UserDetails{
 
     private Date passwordUpdateDate;
 
+    public String getMiddleName() {
+        return middleName;
+    }
+
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
+    }
 
     public boolean isDeleted() {
         return isDeleted;

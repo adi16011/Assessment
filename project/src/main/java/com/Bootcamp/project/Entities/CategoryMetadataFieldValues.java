@@ -6,7 +6,7 @@ import com.Bootcamp.project.Auditing.Auditable;
 import javax.persistence.*;
 
 @Entity
-public class CategoryMetadataFieldValues extends Auditable<String> {
+public class CategoryMetadataFieldValues {
 
     @EmbeddedId
     private CategoryMetadataComposite id;

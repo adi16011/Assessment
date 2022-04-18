@@ -13,6 +13,9 @@ public class SellerRequestDTO {
     @NotEmpty(message = "First name can't be Empty")
     private String firstName;
 
+    private String middleName;
+
+
 
     @NotEmpty(message = "Last Name can't be Empty")
     private String lastName;
@@ -106,6 +109,14 @@ public class SellerRequestDTO {
     private Long zipCode;
 
     private AddressLabel label;
+
+    public String getMiddleName() {
+        return middleName;
+    }
+
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
+    }
 
     public AddressLabel getLabel() {
         return label;

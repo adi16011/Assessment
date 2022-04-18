@@ -7,6 +7,7 @@ import com.Bootcamp.project.Entities.*;
 import com.Bootcamp.project.ExceptionHandlers.ResourceDoesNotExistException;
 import com.Bootcamp.project.repos.*;
 import com.Bootcamp.project.security.RoleService;
+import com.Bootcamp.project.services.AsyncEmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,9 +16,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sql.DataSource;
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +32,10 @@ import java.util.Map;
 @RestController
 @RequestMapping(value = "/seller")
 public class SellerController {
+
+    @Autowired
+    private DataSource dataSource;
+
 
 
     @Autowired
@@ -76,6 +86,9 @@ public class SellerController {
     @Autowired
     private CategoryMetaDataFieldValueRepo categoryMetaDataFieldValueRepo;
 
+    @Autowired
+    private AsyncEmailService asyncEmailService;
+
 
 
 
@@ -122,7 +135,7 @@ public class SellerController {
 
 
     @PutMapping("/update_password")
-    public String updateSellerPassword(@RequestBody UpdatePasswordDTO dto){
+    public String updateSellerPassword(@Valid @RequestBody UpdatePasswordDTO dto){
 
         Authentication authentication = authenticationFacade.getAuthentication();
 
@@ -133,6 +146,9 @@ public class SellerController {
         if(dto.getPassword().equals(dto.getConfirmPassword())){
 
             userRepository.setPassword(passwordEncoder.encode(dto.getPassword()), user.getId());
+            asyncEmailService.sendASynchronousMail(user.getEmail(),"Password Updated","Your Password is updated successfully");
+
+
 
             return "Password updated Successfully";
 
@@ -623,7 +639,7 @@ public class SellerController {
 
         }
 
-        productRepository.delete(product);
+        productRepository.deleteById(id);
 
         return new ResponseEntity<String>("Product deleted successfully",HttpStatus.ACCEPTED);
 
@@ -756,6 +772,42 @@ public class SellerController {
         }
 
         return listNeeded;
+
+    }
+
+    @PostMapping(value = "/logout")
+    public ResponseEntity<String> logoutCustomer(@RequestParam String token, Principal principal){
+
+        Authentication authentication = authenticationFacade.getAuthentication();
+
+
+
+
+        JdbcTokenStore jdbcTokenStore = new JdbcTokenStore(dataSource);
+        OAuth2Authentication oAuth2Authentication = (OAuth2Authentication)principal;
+        OAuth2AccessToken accessToken = jdbcTokenStore.getAccessToken(oAuth2Authentication);
+
+        if(!accessToken.getValue().equals(token)){
+            return new ResponseEntity<String>("This token doesn't exist",HttpStatus.BAD_REQUEST);
+
+        }
+
+        if(accessToken.isExpired()){
+
+            jdbcTokenStore.removeAccessToken(accessToken.getValue());
+            jdbcTokenStore.removeRefreshToken(accessToken.getRefreshToken());
+
+
+            return new ResponseEntity<String>("This token is expired already",HttpStatus.BAD_REQUEST);
+
+        }
+
+        jdbcTokenStore.removeAccessToken(accessToken.getValue());
+        jdbcTokenStore.removeRefreshToken(accessToken.getRefreshToken());
+
+        return new ResponseEntity<String>("User id logged out",HttpStatus.ACCEPTED);
+
+
 
     }
 

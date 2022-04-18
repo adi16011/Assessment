@@ -19,6 +19,9 @@ public class CustomerRequestDTO {
     @NotEmpty(message = "Last Name can't be Empty")
     private String lastName;
 
+    private String middleName;
+
+
 
     @Column(unique = true)
     @Email(message = "Email not valid")
@@ -60,26 +63,13 @@ public class CustomerRequestDTO {
     }
 
 
+    public String getMiddleName() {
+        return middleName;
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
+    }
 
     public String getFirstName() {
         return firstName;

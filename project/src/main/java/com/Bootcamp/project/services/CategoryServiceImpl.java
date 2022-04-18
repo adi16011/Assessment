@@ -2,8 +2,10 @@ package com.Bootcamp.project.services;
 
 import com.Bootcamp.project.DTOs.CategoryDTO;
 import com.Bootcamp.project.DTOs.CategoryFieldValueResDTO;
+import com.Bootcamp.project.DTOs.CategoryMetadataFieldValueDTO;
 import com.Bootcamp.project.Entities.Category;
 import com.Bootcamp.project.Entities.CategoryMetadataField;
+import com.Bootcamp.project.Entities.CategoryMetadataFieldValues;
 import com.Bootcamp.project.ExceptionHandlers.ResourceAlreadyExistException;
 import com.Bootcamp.project.ExceptionHandlers.ResourceDoesNotExistException;
 import com.Bootcamp.project.repos.CategoryMetaDataFieldValueRepo;
@@ -38,6 +40,8 @@ public class CategoryServiceImpl implements CategoryService{
 
 
     public Category addCategory(String name){
+
+
         if(categoryRepo.findByName(name)==null){
             Category category = new Category();
             category.setName(name);
@@ -52,7 +56,7 @@ public class CategoryServiceImpl implements CategoryService{
     public Category addCategory(String name, Long id){
 
 
-        if(categoryRepo.findById(id)==null){
+        if(!categoryRepo.findById(id).isPresent()){
 
             throw new ResourceDoesNotExistException("Parent Category does not exist with id " +id);
 
@@ -166,7 +170,19 @@ public class CategoryServiceImpl implements CategoryService{
             sb.append(",");
         }
         sb.deleteCharAt(sb.length()-1);
+
+//        CategoryMetadataFieldValues values = new CategoryMetadataFieldValues();
+//        Category category = categoryRepo.findById(id).orElse(null);
+//        CategoryMetadataField categoryMetadataField = categoryMetadataFieldRepo.findById(mid).orElse(null);
+//
+//
+//
+//        values.setCategory(category);
+//        values.setCategoryMetadataField(categoryMetadataField);
+//        values.setValue(sb.toString());
+
         categoryMetaDataFieldValueRepo.addMetadataValues(id,mid,sb.toString());
+
         return new CategoryFieldValueResDTO(id,mid,sb.toString());
     }
 

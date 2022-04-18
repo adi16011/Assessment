@@ -163,92 +163,118 @@ public class AdminController {
 
 
 
-    @PutMapping("/activate/customer/{cid}")
-    public String setActiveCustomer(@PathVariable Long cid){
+    @PatchMapping("/activate/customer/{cid}")
+    public ResponseEntity<String> setActiveCustomer(@PathVariable Long cid){
 
         Customer customer = customerRepo.findById(cid).orElse(null);
 
 
 
         if(customer == null){
-            return "User Not Found";
+            return new ResponseEntity<String>("User not found",HttpStatus.BAD_REQUEST);
 
         }
 
         UserEntity user = userRepository.findById(customer.getUserId().getId()).orElse(null);
 
+        if(user.isActive()){
+            return new ResponseEntity<String>("User is already active",HttpStatus.OK);
+
+
+
+        }
+
         userRepository.setActive(user.getId());
+        asyncEmailService.sendASynchronousMail(user.getEmail(),"Account activation","Your account is activated");
 
 
 
-        return "User activated " + user.getUsername() + " " + user.getId();
+        return new ResponseEntity<String>("User activated " + user.getUsername() + " " + user.getId(),HttpStatus.ACCEPTED);
 
     }
 
-    @PutMapping("/deactivate/customer/{cid}")
-    public String setUnActiveCustomer(@PathVariable Long cid){
+    @PatchMapping("/deactivate/customer/{cid}")
+    public ResponseEntity<String> setUnActiveCustomer(@PathVariable Long cid){
 
         Customer customer = customerRepo.findById(cid).orElse(null);
 
 
 
         if(customer == null){
-            return "User Not Found";
+            return new ResponseEntity<String>("User Not Found",HttpStatus.BAD_REQUEST);
 
         }
 
+
         UserEntity user = userRepository.findById(customer.getUserId().getId()).orElse(null);
+
+        if(!user.isActive()){
+            return new ResponseEntity<String>("User is already deactivated",HttpStatus.OK);
+
+        }
 
         userRepository.setUnActive(user.getId());
 
 
 
-        return "User deactivated " + user.getUsername() + " " + user.getId();
+        return new ResponseEntity<String>("User deactivated " + user.getUsername() + " " + user.getId(),HttpStatus.OK);
 
     }
 
 
-    @PutMapping("/activate/seller/{sid}")
-    public String setActiveSeller(@PathVariable Long sid){
+    @PatchMapping("/activate/seller/{sid}")
+    public ResponseEntity<String> setActiveSeller(@PathVariable Long sid){
 
         Seller seller = sellerRepo.findById(sid).orElse(null);
 
 
 
         if(seller == null){
-            return "User Not Found";
+            return new ResponseEntity<String>("User Not Found",HttpStatus.BAD_REQUEST);
 
         }
 
         UserEntity user = userRepository.findById(seller.getUserId().getId()).orElse(null);
+
+        if(user.isActive()){
+            return new ResponseEntity<String>("User is already active",HttpStatus.OK);
+
+
+
+        }
 
         userRepository.setActive(user.getId());
 
 
 
-        return "User activated " + user.getUsername() + " " + user.getId();
+        return new ResponseEntity<String>("User activated " + user.getUsername() + " " + user.getId(),HttpStatus.OK);
 
     }
 
-    @PutMapping("/deactivate/seller/{sid}")
-    public String setUnActiveSeller(@PathVariable Long sid){
+    @PatchMapping("/deactivate/seller/{sid}")
+    public ResponseEntity<String> setUnActiveSeller(@PathVariable Long sid){
 
         Seller seller = sellerRepo.findById(sid).orElse(null);
 
 
 
         if(seller == null){
-            return "User Not Found";
+            return new ResponseEntity<String>("User Not Found",HttpStatus.BAD_REQUEST);
 
         }
 
         UserEntity user = userRepository.findById(seller.getUserId().getId()).orElse(null);
 
+        if(!user.isActive()){
+            return new ResponseEntity<String>("User is already deactivated",HttpStatus.OK);
+
+        }
+
         userRepository.setUnActive(user.getId());
 
 
 
-        return "User deactivated " + user.getUsername() + " " + user.getId();
+        return new ResponseEntity<String>("User deactivated " + user.getUsername() + " " + user.getId(),HttpStatus.ACCEPTED);
 
     }
 
@@ -306,17 +332,28 @@ public class AdminController {
 
     @GetMapping("/category/{id}")
     public Map<String, List<CategoryDTO>> getCategoryById(@PathVariable Long id) {
+        if(!categoryRepo.findById(id).isPresent()){
+            throw new ResourceDoesNotExistException("Category Doesn't exist");
+
+        }
         return categoryService.viewCategoryById(id);
     }
 
 
     @PutMapping("/category/update/{id}")
-    public Category addCategory(@PathVariable Long id,@Valid @RequestBody CategoryDTO categoryDTO){
-        return categoryService.updateCategory(id,categoryDTO.getName());
+    public ResponseEntity<String> addCategory(@PathVariable Long id,@Valid @RequestBody CategoryDTO categoryDTO){
+
+
+        categoryService.updateCategory(id,categoryDTO.getName());
+
+        return new ResponseEntity<String>("Category Updated",HttpStatus.ACCEPTED);
+
     }
 
     @PostMapping("category/metadatavalue/add")
     public CategoryFieldValueResDTO addMetadataValue(@Valid @RequestBody CategoryMetadataFieldValueDTO metadataFieldValueDTO){
+
+
         return categoryService.addMetadataValue(metadataFieldValueDTO.getCategoryId(), metadataFieldValueDTO.getFieldId(),metadataFieldValueDTO.getValues());
     }
 
